@@ -1,0 +1,25 @@
+{
+	"name" : "sansis/dwbundle",
+	"description" : "SanSIS DW (drill down) Bundle for SanSIS Base Bundle development",
+	"type" : "symfony-bundle",
+	"authors" : [{
+			"name" : "Pablo Santiago Sanchez",
+			"email" : "phackwer@gmail.com"
+		}
+	],
+	"keywords" : [
+		"sansis dw drilldown drill down data mining base bundle symfony development"
+	],
+	"license" : "BSD",
+	"autoload" : {
+		"psr-0" : {
+			"SanSIS\\Core\\DwBundle" : ""
+		}
+	},
+	"target-dir" : "SanSIS/Core/DwBundle",
+	"extra" : {
+		"branch-alias" : {
+			"dev-master" : "1.0-dev"
+		}
+	}
+}

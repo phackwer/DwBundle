@@ -1,0 +1,3 @@
+san_sis_core_dw_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: SanSISCoreDwBundle:Default:index }

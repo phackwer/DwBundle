@@ -1,0 +1,4 @@
+services:
+#    san_sis_core_dw.example:
+#        class: SanSIS\Core\DwBundle\Example
+#        arguments: [@service_id, "plain_value", %parameter%]
