@@ -1,6 +1,6 @@
-{% extends "SanSISCoreDwBundle:Dw:base.html.twig" %}
+{% extends "SanSISCoreDwBundle:Dw:index.html.twig" %}
 
-{% block content %}
+{% block box_content %}
     <div class="span12">
         <form id="mainForm" type="get">
             <fieldset>
@@ -22,10 +22,10 @@
     </div>
 {% endblock %}
 
-{% block javascript %}
+{% block box_javascripts %}
 <script>
 
-{%  if rotaParam is defined and rotaParam is not null %}
+{%  if routeParam is defined and routeParam is not null %}
 
 function fixGrid(grid, pager)
 {
@@ -43,17 +43,17 @@ $(document).ready(function() {
 
     $("#grid").jqGrid({
 
-        url:'{{ path('mdw_core_dw_drill_search',  { 'rotaParam': rotaParam , 'nivel' : nivel }) }}?{% for  key, value in formData.searchData  %}{{key}}={{value}}&{% endfor %}',
+        url:'{{ path('san_sis_core_dw_drill_search',  { 'routeParam': routeParam , 'nivel' : nivel }) }}?{% for  key, value in formData.searchData  %}{{key}}={{value}}&{% endfor %}',
         datatype: "json",
         colNames:[
             {% for item in formData.colunas %}
-                '{{ item.dsc_filtro }}',
+                '{{ item.screen_name }}',
             {% endfor %}
             'Ação'
         ],
         colModel:[
             {% for item in formData.colunas %}
-                {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:130, align:"right"},
+                {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:130, align:"right"},
             {% endfor %}
             {name:'acao',index:'acao', width:30, align:"center"}
         ],

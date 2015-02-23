@@ -7,18 +7,18 @@
         <form id="mainForm" type="get">
                 <div class="row-fluid span12">
                 {% block page_content %}
-                    <div class="span8" style="border: 1px #FF0000 solid">
+                    <div class="span8">
                         {% block page_data %}
                             <div class="span10">
                                 {% block buttons %}
                                 Botões de métricas
                                 {% endblock %}
                             </div>
-                            <div class="span10">
+{#                             <div class="span10">
                                 {% block graphics %}
                                 Área destinada a gráficos
                                 {% endblock %}
-                            </div>
+                            </div> #}
                             <div class="span10">
                                 {% block grid %}
                                 Grid de dados
@@ -26,7 +26,7 @@
                             </div>
                         {% endblock %}
                     </div>
-                    <div class="span2" style="border: 1px #FF0000 solid">
+                    <div class="span2">
                         {% block filters %}
                             Filtro
                         {% endblock %}

@@ -19,11 +19,11 @@ class DwService extends BaseService
         $formData = array();
 
         if (!is_null($entityData)) {
-            $rotaParam = $entityData->query->get('rotaParam');
-            $nivel = $entityData->query->get('nivel') ? $entityData->query->get('nivel') : 1;
-            $formData['filtros'] = $this->getFiltros($rotaParam);
-            $formData['botoes'] = $this->getBotoes($rotaParam);
-            $formData['colunas'] = $this->getGridColumns($rotaParam, $nivel);
+            $routeParam = $entityData->query->get('routeParam');
+            $level = $entityData->query->get('level') ? $entityData->query->get('level') : 1;
+            $formData['filtros'] = $this->getFiltros($routeParam);
+            $formData['botoes'] = $this->getBotoes($routeParam);
+            $formData['colunas'] = $this->getGridColumns($routeParam, $level);
         }
 
         $formData['monitoramentos'] = $this->getListMonitoramento();
@@ -32,29 +32,29 @@ class DwService extends BaseService
     }
 
 // FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
-    protected function getFiltros($rotaParam)
+    protected function getFiltros($routeParam)
     {
         $sql = 'SELECT
-          a.dsc_monitoramento,
-          a.dsc_schema,
-          a.dsc_tabela,
-          b.cod_filtro,
-          b.dsc_campo,
-          b.dsc_filtro,
-          b.bln_botao,
-          b.bln_filtro,
-          b.num_ordem_botao,
-          b.num_ordem_filtro,
-          b.bln_multiplo,
-          b.bln_sort_asc,
-          b.cod_monitoramento
+          a.name,
+          a.schema_name,
+          a.dataview_name,
+          b.id,
+          b.dataview_column,
+          b.dataview_column_type,
+          b.screen_name,
+          b.is_metric,
+          b.is_filter,
+          b.screen_order,
+          b.is_multiple,
+          b.filter_sort,
+          b.id
         FROM
-          dashboard.tab_filtro b
-          INNER JOIN dashboard.tab_monitoramento a ON (b.cod_monitoramento = a.cod_monitoramento)
-        WHERE a.dsc_rota_param = \'' . $rotaParam . '\'
-        AND bln_filtro = true
-        ORDER BY b.num_ordem_filtro
-  ';
+          core_dw_filter b
+          INNER JOIN core_dw_monitor a ON (a.id = b.monitor_id)
+        WHERE a.route_param = \'' . $routeParam . '\'
+        AND is_filter = true
+        ORDER BY b.screen_order';
+
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
 
@@ -62,11 +62,11 @@ class DwService extends BaseService
 
         foreach ($filtros as $key => $filtro) {
             $sql = 'SELECT DISTINCT
-                ' . $filtro['dsc_campo'] . ' as valor
+                ' . $filtro['dataview_column'] . ' as valor
             FROM
-              ' . $filtro['dsc_schema'] . '.' . $filtro['dsc_tabela'];
+              ' . $filtro['schema_name'] . '.' . $filtro['dataview_name'];
 
-            $sql .= ' order by ' . $filtro['dsc_campo'] . ' ' . ($filtro['bln_sort_asc'] ? ' ASC ' : 'DESC');
+            $sql .= ' order by ' . $filtro['dataview_column'] . ' ' . ($filtro['filter_sort'] ? ' ASC ' : 'DESC');
             $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
             $stmt->execute();
 
@@ -77,29 +77,29 @@ class DwService extends BaseService
     }
 
 // BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
-    protected function getBotoes($rotaParam)
+    protected function getBotoes($routeParam)
     {
         $sql = 'SELECT
-          a.dsc_monitoramento,
-          a.dsc_schema,
-          a.dsc_tabela,
-          b.cod_filtro,
-          b.dsc_campo,
-          b.dsc_filtro,
-          b.bln_botao,
-          b.bln_filtro,
-          b.num_ordem_botao,
-          b.num_ordem_filtro,
-          b.bln_multiplo,
-          b.bln_sort_asc,
-          b.cod_monitoramento
+          a.name,
+          a.schema_name,
+          a.dataview_name,
+          b.id,
+          b.dataview_column,
+          b.dataview_column_type,
+          b.screen_name,
+          b.is_metric,
+          b.is_filter,
+          b.screen_order,
+          b.is_multiple,
+          b.filter_sort,
+          b.id
         FROM
-          dashboard.tab_filtro b
-          INNER JOIN dashboard.tab_monitoramento a ON (b.cod_monitoramento = a.cod_monitoramento)
-        WHERE a.dsc_rota_param = \'' . $rotaParam . '\'
-        AND bln_botao = true
-        ORDER BY b.num_ordem_botao
-  ';
+          core_dw_filter b
+          INNER JOIN core_dw_monitor a ON (a.id = b.monitor_id)
+        WHERE a.route_param = \'' . $routeParam . '\'
+        AND is_metric = true
+        ORDER BY b.screen_order';
+
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
 
@@ -110,8 +110,8 @@ class DwService extends BaseService
     public function getMonitData(Request $req)
     {
         $sql = 'SELECT *
-                    FROM dashboard.tab_monitoramento b
-                     WHERE  b.dsc_rota_param = \'' . $req->query->get('rotaParam') . '\'
+                    FROM core_dw_monitor b
+                     WHERE  b.route_param = \'' . $req->query->get('routeParam') . '\'
                     ';
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
@@ -136,7 +136,7 @@ class DwService extends BaseService
 
         foreach ($keys as $key) {
             $value = $req->query->get($key);
-            if (!in_array($key, array('metrica', 'rotaParam', 'selected')) && $value != '') {
+            if (!in_array($key, array('metrica', 'routeParam', 'selected')) && $value != '') {
                 if (is_array($value)) {
                     $or = '';
                     $where .= $and . '  ( ';
@@ -159,14 +159,14 @@ class DwService extends BaseService
         $comboData = array();
 
         foreach ($keys as $key) {
-            if (!in_array($key, array('metrica', 'rotaParam', 'selected')) && $value != '' && $key != $descarte) {
+            if (!in_array($key, array('metrica', 'routeParam', 'selected')) && $value != '' && $key != $descarte) {
 
-                $sql = 'SELECT a.bln_sort_asc, a.dsc_campo FROM dashboard.tab_filtro a WHERE   a.cod_monitoramento = ' . $monitData[0]['cod_monitoramento'] . '  and a.dsc_campo = \'' . $key . '\'';
+                $sql = 'SELECT a.filter_sort, a.dataview_column FROM core_dw_filter a WHERE   a.monitor_id = ' . $monitData[0]['id'] . '  and a.dataview_column = \'' . $key . '\'';
                 $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
                 $stmt->execute();
                 $order = $stmt->fetchAll();
-                $sql = 'select distinct ' . $key . ' from ' . $monitData[0]['dsc_schema'] . '.' . $monitData[0]['dsc_tabela'] . $where;
-                $sql .= ' order by ' . $key . ' ' . ($order[0]['bln_sort_asc'] ? 'asc' : 'desc');
+                $sql = 'select distinct ' . $key . ' from ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'] . $where;
+                $sql .= ' order by ' . $key . ' ' . ($order[0]['filter_sort'] ? 'asc' : 'desc');
                 $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
                 $stmt->execute();
                 $comboData[$key] = $stmt->fetchAll();
@@ -178,13 +178,15 @@ class DwService extends BaseService
     }
 
     // GRID
-    protected function getGridColumns($rotaParam, $nivel)
+    protected function getGridColumns($routeParam, $level)
     {
         $sql = 'SELECT *
-                    FROM dashboard.tab_fatos a
-                     INNER JOIN dashboard.tab_monitoramento b
-                     ON a.cod_monitoramento = b.cod_monitoramento
-                     WHERE a.num_nivel = ' . $nivel . ' AND b.dsc_rota_param = \'' . $rotaParam . '\'
+                    FROM core_dw_filter a
+                     INNER JOIN core_dw_monitor b
+                     ON a.monitor_id = b.id
+                     WHERE a.level = ' . $level . ' AND
+                     a.is_fact = true AND
+                     b.route_param = \'' . $routeParam . '\'
                     ';
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
@@ -226,24 +228,24 @@ class DwService extends BaseService
     /********************************************************************************
 
 
-    QUERYS NIVEL 1
+    QUERYS level 1
 
 
      ********************************************************************************/
 
     //Busca as colunas a serem utilizadas para o Drill
-    public function getDrillColumns($rotaParam, $nivel)
+    public function getDrillColumns($routeParam, $level)
     {
-        $nivel = 1;
+        $level = 1;
         $sql = 'SELECT
-                  a.dsc_schema,
-                  a.dsc_tabela,
-                  b.dsc_campo,
-                  b.dsc_filtro
-                  FROM dashboard.tab_filtro b
-                 INNER JOIN dashboard.tab_monitoramento a
-                 ON a.cod_monitoramento = b.cod_monitoramento
-                 WHERE  a.dsc_rota_param = \'' . $rotaParam . '\'
+                  a.schema_name,
+                  a.dataview_name,
+                  b.dataview_column,
+                  b.screen_name
+                  FROM core_dw_filter b
+                 INNER JOIN core_dw_monitor a
+                 ON b.monitor_id = a.id
+                 WHERE  a.route_param = \'' . $routeParam . '\'
                     ';
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
@@ -295,10 +297,10 @@ class DwService extends BaseService
 
     public function getFullSearchQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
-        //Pegar os dados do monitoramento de acordo com a rota
+        //Pegar os dados do monitoramento de acordo com a route
         $sql = 'SELECT *
-                    FROM dashboard.tab_monitoramento b
-                     WHERE  b.dsc_rota_param = \'' . $searchData['rotaParam'] . '\'
+                    FROM core_dw_monitor b
+                     WHERE  b.route_param = \'' . $searchData['routeParam'] . '\'
                     ';
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
@@ -307,9 +309,12 @@ class DwService extends BaseService
         //Pega os fatos
         $sql = 'SELECT *
                     FROM
-                    dashboard.tab_fatos b
+                    core_dw_filter b
                      WHERE
-                      b.cod_monitoramento =  ' . $monitData[0]['cod_monitoramento'];
+                      b.is_fact = true
+                      AND
+                      b.monitor_id =  ' . $monitData[0]['id'].'
+                      ORDER BY screen_order';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
 
@@ -321,16 +326,19 @@ class DwService extends BaseService
                       ' . $searchData['metrica'];
 
         foreach ($fatoData as $key => $row) {
-            $sql .= ',sum(' . $row['dsc_campo'] . ') ' . $row['dsc_campo'];
+            if ($row['dataview_column_type'] == 'integer' || $row['dataview_column_type'] == 'float' || $row['dataview_column_type'] == 'money')
+                $sql .= ',sum(' . $row['dataview_column'] . ') ' . $row['dataview_column'];
+            else
+                $sql .= ','.$row['dataview_column'];
         }
 
         $sql .= ' FROM
-                    ' . $monitData[0]['dsc_schema'] . '.' . $monitData[0]['dsc_tabela'];
+                    ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'];
 
         $and = ' where ';
 
         foreach ($searchData as $key => $value) {
-            if ($key != 'metrica' && $key != 'rotaParam' && $value != '') {
+            if ($key != 'metrica' && $key != 'routeParam' && $value != '') {
                 if (is_array($value)) {
                     $or = '';
                     $sql .= $and . '  ( ';
@@ -375,7 +383,7 @@ class DwService extends BaseService
     /********************************************************************************
 
 
-    QUERYS NIVEL N
+    QUERYS level N
 
 
      ********************************************************************************/
@@ -424,10 +432,10 @@ class DwService extends BaseService
 
     public function getFullDrillQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
-        //Pegar os dados do monitoramento de acordo com a rota
+        //Pegar os dados do monitoramento de acordo com a route
         $sql = 'SELECT *
-                    FROM dashboard.tab_monitoramento b
-                     WHERE  b.dsc_rota_param = \'' . $searchData['rotaParam'] . '\'
+                    FROM core_dw_monitor b
+                     WHERE  b.route_param = \'' . $searchData['routeParam'] . '\'
                     ';
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
@@ -436,9 +444,12 @@ class DwService extends BaseService
         //Pega os fatos
         $sql = 'SELECT *
                     FROM
-                    dashboard.tab_fatos b
+                    core_dw_filter b
                      WHERE
-                      b.cod_monitoramento =  ' . $monitData[0]['cod_monitoramento'];
+                      b.is_fact = true
+                      AND
+                      b.monitor_id =  ' . $monitData[0]['id'].'
+                      ORDER BY screen_order';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
 
@@ -447,12 +458,12 @@ class DwService extends BaseService
 
         //Pega os dados para a grid
         $sql = 'SELECT  * FROM
-                    ' . $monitData[0]['dsc_schema'] . '.' . $monitData[0]['dsc_tabela'];
+                    ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'];
 
         $and = ' where ';
 
         foreach ($searchData as $key => $value) {
-            if ($key != 'metrica' && $key != 'rotaParam' && $value != '') {
+            if ($key != 'metrica' && $key != 'routeParam' && $value != '') {
                 if (is_array($value)) {
                     $or = '';
                     $sql .= $and . '  ( ';
@@ -495,7 +506,7 @@ class DwService extends BaseService
     {
         //MATERA! Fazer as queries para pegar as views do monitoramento com o parametro passado do identificador/chave
         $monitData = $this->getMonitData($req);
-        $codMonit = $monitData[0]['cod_monitoramento']; //com este vc pega a lista das views
+        $codMonit = $monitData[0]['id']; //com este vc pega a lista das views
         $codChave = $monitData[0]['cod_chave']; //com este vc pega o nome da colune e a linha de cada view
         $codChaveValor = $req->query->get($codChave); //este é o valor que deve estar na coluna
 

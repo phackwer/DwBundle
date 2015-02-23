@@ -1,58 +1,56 @@
-{% extends "::index.html.twig" %}
+{% extends "SanSISCoreDwBundle:Dw:index.html.twig" %}
 
-{% block page_title %}Monitoramento{% endblock %}
-
-{% block filters %}
-    <div class="span5">
-        <div id="filtros">
-            <form id="monitoramento" action="">
-             {%  if formData.filtros is defined %}
-              {% for item in formData.filtros %}
-                  {{ item.dsc_filtro }}
-                  <select class="span filtro" name="{{ item.dsc_campo }}" id="{{ item.dsc_campo }}" {% if item.bln_multiplo %}multiple{% endif%}>
-                  <option value="" selected>[-- Selecione Abaixo --]</option>
-                  {% for valor in item.valores %}
-                      <option value="{{ valor.valor }}" >{{ valor.valor }}</option>
-                  {% endfor %}
-                  </select>
-              {% endfor %}
-              {% endif %}
-        </div>
-        <div>
-            <a href="{{ path('mdw_core_dw_entry',  {'rotaParam' : rotaParam })}}" class="btn btn-danger span"><span class="icon-trash icon-white"></span> Limpar filtros</a>
-            <!-- <a href="javascript:;" onclick="$(this).submit();" id="submit" class="btn btn-success">Pesquisar</a> -->
-        </div>
-    </div>
-{% endblock %}
+{% block box_title %}Relatórios / DW{% endblock %}
 
 {% block buttons %}
     <div  id="botoes" class="btn-group clearfix" style="overflow: auto;margin-left: 5px;">
       {%  if formData.botoes is defined %}
         {% for item in formData.botoes %}
-            <a href="#" dataPath="{{ path('mdw_core_dw_search', { 'rotaParam' : rotaParam}) }}"
-                  metrica="{{ item.dsc_campo }}"
+            <a dataPath="{{ path('san_sis_core_dw_search', { 'routeParam' : routeParam}) }}"
+                  metrica="{{ item.dataview_column }}"
                   class="metricas btn btn-mini btn-primary">
-                {{ item.dsc_filtro }}
+                {{ item.screen_name }}
             </a>
         {% endfor %}
        {% endif %}
     </div>
 {% endblock %}
 
+{% block filters %}
+        <div id="filtros" style="overflow: auto">
+            <form id="monitoramento" action="">
+            {%  if formData.filtros is defined %}
+                {% for item in formData.filtros %}
+                    <label>{{ item.screen_name }}</label>
+                    <select class="span filtro" name="{{ item.dataview_column }}" id="{{ item.dataview_column }}" {% if item.is_multiple %}multiple{% endif%}>
+                    <option value="" selected>[-- Selecione Abaixo --]</option>
+                    {% for valor in item.valores %}
+                        <option value="{{ valor.valor }}" >{{ valor.valor }}</option>
+                    {% endfor %}
+                    </select>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div>
+            <a href="{{ path('san_sis_core_dw_entry',  {'routeParam' : routeParam })}}" class="btn btn-danger span6">Limpar</a>
+            <a onclick="exportExcel()" id="submit" class="btn btn-primary span6">Excel</a>
+        </div>
+{% endblock %}
+
 {% block graphics %}{% endblock %}
 
 {% block grid %}
-    <div class="span10 ">
+    <div class="jqGrid_container span marginBottom">
         <table id="grid" class="grid"></table>
         <div id="pager" class="pager"></div>
     </div>
 
 {% endblock %}
 
-{% block javascript %}
+{% block box_javascripts %}
 <script>
 
-{%  if rotaParam is defined and rotaParam is not null %}
+{%  if routeParam is defined and routeParam is not null %}
 
 function pegaValoresDoFormulario()
 {
@@ -110,17 +108,17 @@ function pegaMetrica ()
      $('#grid').jqGrid('clearGridData');
      $('#grid').jqGrid('setGridParam',
      {
-          url:'{{ path('mdw_core_dw_search',  { 'rotaParam': rotaParam}) }}',
+          url:'{{ path('san_sis_core_dw_search',  { 'routeParam': routeParam}) }}',
           postData : formValues,
           sortname: $('.metricas.btn-success').attr('metrica'),
           colModel:[
-           {name: $('.metricas.btn-success').attr('metrica'),index:'' + $('.metricas.btn-success').attr('metrica'), width:100},
+            {name: $('.metricas.btn-success').attr('metrica'),index:'' + $('.metricas.btn-success').attr('metrica'), width:100},
             {name:'qtde',index:'qtde', width:30, align:"center"},
-           {% for item in formData.colunas %}
-         {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:100, align:"right"},
-         {% endfor %}
-           {name:'acao',index:'acao', width:30, align:"center"}
-     ],
+            {% for item in formData.colunas %}
+            {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:100, align:"right"},
+            {% endfor %}
+            {name:'acao',index:'acao', width:30, align:"center"}
+            ],
      }).trigger("reloadGrid");
 }
 
@@ -131,7 +129,7 @@ function pegaValoresVinculados()
    formValues.selected  = $(this).attr('name');
 
    jQuery.ajax(
-      '{{ path('mdw_core_dw_combos', {'rotaParam' : rotaParam}) }}',
+      '{{ path('san_sis_core_dw_combos', {'routeParam' : routeParam}) }}',
       {
         data: formValues
       }
@@ -162,14 +160,14 @@ function pegaValoresVinculados()
 
 function fixGrid(grid, pager)
 {
-    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 500 )
-    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 325);
+    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 690 )
+    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 430);
 }
 
 function fixViewSizes(e) {
     fixGrid('grid', 'pager');
-    $('#filtros').css('height',parseInt($(window).innerHeight()) - 285);
-    $('#botoes').css('width',parseInt($(window).innerWidth()) - 500 );
+    $('#filtros').css('height',parseInt($(window).innerHeight()) - 350);
+    $('#botoes').css('width',parseInt($(window).innerWidth()) - 600 );
 }
 
 $(window).bind('resize', fixViewSizes);
@@ -178,13 +176,13 @@ $(document).ready(function() {
 
     $("#grid").jqGrid({
 
-        url:'{{ path('mdw_core_dw_search',  { 'rotaParam': rotaParam}) }}?metrica=' + $(".metricas").first().attr('metrica'),
+        url:'{{ path('san_sis_core_dw_search',  { 'routeParam': routeParam}) }}?metrica=' + $(".metricas").first().attr('metrica'),
         datatype: "json",
         colNames:[
               'Métrica',
               'Quantidade',
                {% for item in formData.colunas %}
-                  '{{ item.dsc_fato }}',
+                  '{{ item.screen_name }}',
               {% endfor %}
               'Ação'
 
@@ -193,7 +191,7 @@ $(document).ready(function() {
            {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:100},
            {name:'qtde',index:'qtde', width:30, align:"center"},
            {% for item in formData.colunas %}
-           {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:100, align:"right"},
+           {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:100, align:"right"},
            {% endfor %}
            {name:'acao',index:'acao', width:30, align:"center"}
         ],

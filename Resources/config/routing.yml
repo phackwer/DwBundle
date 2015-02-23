@@ -1,34 +1,34 @@
 #Primeira tela pós login
 san_sis_core_dw:
-    path:     /dw/
+    path:     /
     defaults: { _controller: SanSISCoreDwBundle:Dw:index }
 
 #JSON Carregamento dos combos
 san_sis_core_dw_combos:
-    path:     /dw/{rotaParam}/combos
+    path:     /{routeParam}/combos
     defaults: { _controller: SanSISCoreDwBundle:Dw:getComboData }
 
 #Primeiro nível de dw
 san_sis_core_dw_entry:
-    path:     /dw/{rotaParam}
-    defaults: { _controller: SanSISCoreDwBundle:Dw:rotaParam }
+    path:     /{routeParam}
+    defaults: { _controller: SanSISCoreDwBundle:Dw:routeParam }
 
 # JSON Pesquisa de nível 1
 san_sis_core_dw_search:
-    path:     /dw/{rotaParam}/search
+    path:     /{routeParam}/search
     defaults: { _controller: SanSISCoreDwBundle:Dw:getGridData }
 
 #Drill de n níveis
 san_sis_core_dw_drill:
-    path:     /dw/{rotaParam}/drill/{nivel}
+    path:     /{routeParam}/drill/{nivel}
     defaults: { _controller: SanSISCoreDwBundle:Dw:drill }
 
 # JSON pesquisa de nível n
 san_sis_core_dw_drill_search:
-    path:     /dw/{rotaParam}/drill/{nivel}/data
+    path:     /{routeParam}/drill/{nivel}/data
     defaults: { _controller: SanSISCoreDwBundle:Dw:getDrillGridData }
 
 #View
 san_sis_core_dw_view:
-    path:     /dw/{rotaParam}/view/{nivel}
+    path:     /{routeParam}/view/{nivel}
     defaults: { _controller: SanSISCoreDwBundle:Dw:viewView }

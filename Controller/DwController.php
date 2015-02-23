@@ -12,17 +12,17 @@ class DwController extends BaseController
     protected $indexView = 'SanSISCoreDwBundle:Dw:index.html.twig';
 
     // protected $createView = 'SanSISCoreDwBundle:Dw:form.html.twig'
-    // protected $createRoute = 'mdw_core_dw_create';
+    // protected $createRoute = 'san_sis_core_dw_create';
 
     // protected $editView = 'SanSISCoreDwBundle:Dw:form.html.twig';
-    // protected $editRoute = 'mdw_core_dw_edit';
+    // protected $editRoute = 'san_sis_core_dw_edit';
 
-    // protected $saveSuccessRoute = 'mdw_core_dw';
+    // protected $saveSuccessRoute = 'san_sis_core_dw';
 
     protected $monitView = 'SanSISCoreDwBundle:Dw:monit.html.twig';
 
     protected $drillView = 'SanSISCoreDwBundle:Dw:drillView.html.twig';
-    protected $drillRoute = 'mdw_core_dw_drill';
+    protected $drillRoute = 'san_sis_core_dw_drill';
 
     protected $viewView = 'SanSISCoreDwBundle:Dw:viewView.html.twig';
 
@@ -213,7 +213,7 @@ class DwController extends BaseController
 
         for ($a = 0; $a < count($data->rows); $a++) {
             $rowData = $and . 'valor=' . $data->rows[$a][$searchData['metrica']];
-            $href = $this->generateUrl('mdw_core_dw_drill', array(
+            $href = $this->generateUrl('san_sis_core_dw_drill', array(
                 'routeParam' => $routeParam,
                 'nivel' => $nivel,
             ));
@@ -303,7 +303,7 @@ class DwController extends BaseController
             $rowData = $and . 'valor=' . $data->rows[$a][$searchData['metrica']];
             $rowIdent = $monitData[0]['cod_chave'];
             $codchave = $and . $rowIdent . '=' . $data->rows[$a][$rowIdent];
-            $href = $this->generateUrl('mdw_core_dw_view', array(
+            $href = $this->generateUrl('san_sis_core_dw_view', array(
                 'routeParam' => $routeParam,
                 'nivel' => $nivel,
             ));
