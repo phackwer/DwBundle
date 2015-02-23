@@ -1,4 +1,4 @@
 services:
-#    san_sis_core_dw.example:
-#        class: SanSIS\Core\DwBundle\Example
-#        arguments: [@service_id, "plain_value", %parameter%]
+  sansis.dw.service:
+    class: SanSIS\Core\DwBundle\Service\DwService
+    arguments: ["@doctrine.orm.entity_manager", "default"]

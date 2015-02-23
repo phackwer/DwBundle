@@ -1,0 +1,39 @@
+{% extends "::base.html.twig" %}
+
+{% block box_title %}Monitoramento{% endblock %}
+
+{% block box_content %}
+    <div class="span12">
+        <form id="mainForm" type="get">
+                <div class="row-fluid span12">
+                {% block page_content %}
+                    <div class="span8" style="border: 1px #FF0000 solid">
+                        {% block page_data %}
+                            <div class="span10">
+                                {% block buttons %}
+                                Botões de métricas
+                                {% endblock %}
+                            </div>
+                            <div class="span10">
+                                {% block graphics %}
+                                Área destinada a gráficos
+                                {% endblock %}
+                            </div>
+                            <div class="span10">
+                                {% block grid %}
+                                Grid de dados
+                                {% endblock %}
+                            </div>
+                        {% endblock %}
+                    </div>
+                    <div class="span2" style="border: 1px #FF0000 solid">
+                        {% block filters %}
+                            Filtro
+                        {% endblock %}
+                    </div>
+                {%endblock%}
+                </div>
+        </form>
+    </div>
+{% endblock %}
+

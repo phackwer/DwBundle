@@ -1,0 +1,93 @@
+{% extends "SanSISCoreDwBundle::base.html.twig" %}
+
+{% block content %}
+    <div class="span12">
+        <form id="mainForm" type="get">
+            <fieldset>
+                <legend>{% block page_title %}Monitoramento{% endblock %}</legend>
+                    <div class="span12">
+                        {% block graphics %}
+
+                        {% endblock %}
+                    </div>
+                    <div class="span12">
+                        {% block grid %}
+                        <div class="span12 ">
+                            <table id="grid" class="grid"></table>
+                            <div id="pager" class="pager"></div>
+                        </div>
+                        {% endblock %}
+                    </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+
+{%  if rotaParam is defined and rotaParam is not null %}
+
+function fixGrid(grid, pager)
+{
+    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 310 )
+    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 295);
+}
+
+function fixGrids(e) {
+    fixGrid('grid', 'pager');
+}
+
+$(window).bind('resize', fixGrids);
+
+$(document).ready(function() {
+
+    $("#grid").jqGrid({
+
+        url:'{{ path('mdw_core_dw_drill_search',  { 'rotaParam': rotaParam , 'nivel' : nivel }) }}?{% for  key, value in formData.searchData  %}{{key}}={{value}}&{% endfor %}',
+        datatype: "json",
+        colNames:[
+            {% for item in formData.colunas %}
+                '{{ item.dsc_filtro }}',
+            {% endfor %}
+            'Ação'
+        ],
+        colModel:[
+            {% for item in formData.colunas %}
+                {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:130, align:"right"},
+            {% endfor %}
+            {name:'acao',index:'acao', width:30, align:"center"}
+        ],
+        scrollOffset: 0,
+        forceFit:true,
+        hidegrid: false,
+        height: 500,
+        autowidth: true,
+        shrinkToFit: false,
+        pager: '#pager',
+        viewrecords: true,
+        sortname: '{{formData.searchData.metrica}}',
+        sortorder: "asc",
+        rowNum: 30,
+        loadComplete: function() {
+            if ($(this).getGridParam("records")==0)
+            {
+               $( "#dialog-msg" ).dialog({
+                resizable: false,
+                height:140,
+                modal: true,
+                buttons: {
+                      "Fechar": function() {
+                      $( this ).dialog( "close" );
+                    }
+                  }}).html('Nenhum registro encontrado com estes parâmetros.');
+            }
+        }
+     });
+
+fixGrids();
+
+});
+{% endif %}
+</script>
+{% endblock %}

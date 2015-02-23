@@ -4,27 +4,27 @@ namespace SanSIS\Core\DwBundle\Controller;
 
 use \SanSIS\Core\BaseBundle\Controller\BaseController;
 
-class DefaultController extends BaseController
+class DwController extends BaseController
 {
 
     protected $service = 'sansis.dw.service';
 
-    protected $indexView = 'SanSISCoreBundle:Dw:index.html.twig';
+    protected $indexView = 'SanSISCoreDwBundle:Dw:index.html.twig';
 
-    // protected $createView = 'SanSISCoreBundle:Dw:form.html.twig'
+    // protected $createView = 'SanSISCoreDwBundle:Dw:form.html.twig'
     // protected $createRoute = 'mdw_core_dw_create';
 
-    // protected $editView = 'SanSISCoreBundle:Dw:form.html.twig';
+    // protected $editView = 'SanSISCoreDwBundle:Dw:form.html.twig';
     // protected $editRoute = 'mdw_core_dw_edit';
 
     // protected $saveSuccessRoute = 'mdw_core_dw';
 
-    protected $monitView = 'SanSISCoreBundle:Dw:monit.html.twig';
+    protected $monitView = 'SanSISCoreDwBundle:Dw:monit.html.twig';
 
-    protected $drillView = 'SanSISCoreBundle:Dw:drillView.html.twig';
+    protected $drillView = 'SanSISCoreDwBundle:Dw:drillView.html.twig';
     protected $drillRoute = 'mdw_core_dw_drill';
 
-    protected $viewView = 'SanSISCoreBundle:Dw:viewView.html.twig';
+    protected $viewView = 'SanSISCoreDwBundle:Dw:viewView.html.twig';
 
     /**
      * Carrega a primeira tela do monitoramento

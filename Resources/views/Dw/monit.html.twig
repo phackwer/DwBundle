@@ -1,0 +1,261 @@
+{% extends "::index.html.twig" %}
+
+{% block page_title %}Monitoramento{% endblock %}
+
+{% block filters %}
+    <div class="span5">
+        <div id="filtros">
+            <form id="monitoramento" action="">
+             {%  if formData.filtros is defined %}
+              {% for item in formData.filtros %}
+                  {{ item.dsc_filtro }}
+                  <select class="span filtro" name="{{ item.dsc_campo }}" id="{{ item.dsc_campo }}" {% if item.bln_multiplo %}multiple{% endif%}>
+                  <option value="" selected>[-- Selecione Abaixo --]</option>
+                  {% for valor in item.valores %}
+                      <option value="{{ valor.valor }}" >{{ valor.valor }}</option>
+                  {% endfor %}
+                  </select>
+              {% endfor %}
+              {% endif %}
+        </div>
+        <div>
+            <a href="{{ path('mdw_core_dw_entry',  {'rotaParam' : rotaParam })}}" class="btn btn-danger span"><span class="icon-trash icon-white"></span> Limpar filtros</a>
+            <!-- <a href="javascript:;" onclick="$(this).submit();" id="submit" class="btn btn-success">Pesquisar</a> -->
+        </div>
+    </div>
+{% endblock %}
+
+{% block buttons %}
+    <div  id="botoes" class="btn-group clearfix" style="overflow: auto;margin-left: 5px;">
+      {%  if formData.botoes is defined %}
+        {% for item in formData.botoes %}
+            <a href="#" dataPath="{{ path('mdw_core_dw_search', { 'rotaParam' : rotaParam}) }}"
+                  metrica="{{ item.dsc_campo }}"
+                  class="metricas btn btn-mini btn-primary">
+                {{ item.dsc_filtro }}
+            </a>
+        {% endfor %}
+       {% endif %}
+    </div>
+{% endblock %}
+
+{% block graphics %}{% endblock %}
+
+{% block grid %}
+    <div class="span10 ">
+        <table id="grid" class="grid"></table>
+        <div id="pager" class="pager"></div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+
+{%  if rotaParam is defined and rotaParam is not null %}
+
+function pegaValoresDoFormulario()
+{
+    var formValues;
+    var formArray = $('#mainForm').serializeArray();
+
+    console.log(formArray);
+
+    var lastName = '';
+    var counter = 1;
+
+    var virgula = ',';
+    var json = 'formValues = {';
+    json += ' metrica: \'' + $(".metricas.btn-success").attr('metrica') + '\'';
+
+
+    for (var i in formArray){
+
+        if ($('select[name="'+formArray[i]['name']+'"] option:selected').length == 1) {
+            json +=  virgula + formArray[i]['name'] + ':\'' + formArray[i]['value'] + '\'';
+            lastName = '';
+            counter = 1;
+        } else if ($('select[name="'+formArray[i]['name']+'"] option:selected').length > 1)  {
+            if ( lastName != formArray[i]['name']) {
+                json +=  virgula + formArray[i]['name'] + ': [\'' + formArray[i]['value'] + '\'';
+                lastName = formArray[i]['name']
+            } else {
+                json +=  virgula + '\'' + formArray[i]['value'] + '\'';
+                counter++;
+                if (counter == $('select[name="'+formArray[i]['name']+'"] option:selected').length) {
+                    json += ']'
+                    counter = 1;
+                    lastName = '';
+                }
+            }
+        }
+    }
+
+    json += '}';
+
+    eval(json);
+
+    return formValues;
+}
+
+function pegaMetrica ()
+{
+  if ($(this).attr('metrica')) {
+       $(".metricas").addClass('btn-primary').removeClass('btn-success');
+      $(this).removeClass('btn-primary').addClass('btn-success');
+    }
+
+    var formValues = pegaValoresDoFormulario();
+
+     $('#grid').jqGrid('clearGridData');
+     $('#grid').jqGrid('setGridParam',
+     {
+          url:'{{ path('mdw_core_dw_search',  { 'rotaParam': rotaParam}) }}',
+          postData : formValues,
+          sortname: $('.metricas.btn-success').attr('metrica'),
+          colModel:[
+           {name: $('.metricas.btn-success').attr('metrica'),index:'' + $('.metricas.btn-success').attr('metrica'), width:100},
+            {name:'qtde',index:'qtde', width:30, align:"center"},
+           {% for item in formData.colunas %}
+         {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:100, align:"right"},
+         {% endfor %}
+           {name:'acao',index:'acao', width:30, align:"center"}
+     ],
+     }).trigger("reloadGrid");
+}
+
+function pegaValoresVinculados()
+{
+   var formValues = pegaValoresDoFormulario();
+
+   formValues.selected  = $(this).attr('name');
+
+   jQuery.ajax(
+      '{{ path('mdw_core_dw_combos', {'rotaParam' : rotaParam}) }}',
+      {
+        data: formValues
+      }
+   ).success(function(data){
+    for (i in data) {
+      var select = $('select[name="'+i+'"]');
+      var selecteds = select.find(':selected');
+      var selectedsVals = [];
+      var values = data[i];
+      selecteds.each(function(i, option){
+         selectedsVals[selectedsVals.length] = $(option).val();
+      })
+
+      select.html('');
+      select.append('<option value="" selected>[-- Selecione Abaixo --]</option>');
+      $.each(values, function(index, value){
+        selected = '';
+        for (j in selectedsVals) {
+            if (selectedsVals[j] === value[i]) {
+              selected = 'selected';
+            }
+        }
+        select.append('<option value="'+value[i]+'" ' + selected+ '>'+value[i]+'</option>');
+      });
+    }
+   });
+}
+
+function fixGrid(grid, pager)
+{
+    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 500 )
+    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 325);
+}
+
+function fixViewSizes(e) {
+    fixGrid('grid', 'pager');
+    $('#filtros').css('height',parseInt($(window).innerHeight()) - 285);
+    $('#botoes').css('width',parseInt($(window).innerWidth()) - 500 );
+}
+
+$(window).bind('resize', fixViewSizes);
+
+$(document).ready(function() {
+
+    $("#grid").jqGrid({
+
+        url:'{{ path('mdw_core_dw_search',  { 'rotaParam': rotaParam}) }}?metrica=' + $(".metricas").first().attr('metrica'),
+        datatype: "json",
+        colNames:[
+              'Métrica',
+              'Quantidade',
+               {% for item in formData.colunas %}
+                  '{{ item.dsc_fato }}',
+              {% endfor %}
+              'Ação'
+
+        ],
+        colModel:[
+           {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:100},
+           {name:'qtde',index:'qtde', width:30, align:"center"},
+           {% for item in formData.colunas %}
+           {name: '{{ item.dsc_campo }}',index: '{{ item.dsc_campo }}', width:100, align:"right"},
+           {% endfor %}
+           {name:'acao',index:'acao', width:30, align:"center"}
+        ],
+         scrollOffset: 0,
+         forceFit:false,
+         hidegrid: false,
+         width: 960,
+         height: 500,
+         autowidth: false,
+         shrinkToFit: true,
+         pager: '#pager',
+         viewrecords: true,
+         sortname: '' + $(".metricas").first().attr('metrica'),
+         sortorder: "asc",
+         rowNum: 30,
+         loadComplete: function() {
+            if ($(this).getGridParam("records")==0)
+            {
+               $( "#dialog-msg" ).dialog({
+                resizable: false,
+                height:140,
+                modal: true,
+                buttons: {
+                      "Fechar": function() {
+                      $( this ).dialog( "close" );
+                    }
+                  }}).html('Nenhum registro encontrado com estes parâmetros.');
+            }
+        },
+        loadError: function (jqXHR, textStatus, errorThrown) {
+          $(".metricas").first().trigger('click');
+        }
+     });
+
+    $('#grid').jqGrid('setGridParam',
+      {
+        postData: { metrica: $(".metricas").first().attr('metrica') }
+    }).trigger("reloadGrid");
+
+    $(".metricas").click(pegaMetrica);
+
+    $(".filtro").change(pegaMetrica);
+    $(".filtro").change(pegaValoresVinculados);
+
+    $("#clearBt").click( function ()
+    {
+        $("input").val('');
+        $("select").val('');
+
+        $('#grid').jqGrid('clearGridData');
+
+        $('#grid').jqGrid('setGridParam', {
+            postData : {}
+        }).trigger("reloadGrid");
+
+    });
+
+    $(".metricas").first().trigger('click');
+
+    fixViewSizes();
+
+});
+{% endif %}
+</script>
+{% endblock %}
