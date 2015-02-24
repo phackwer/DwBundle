@@ -3,19 +3,18 @@
 {% block box_content %}
     <div class="span12">
         <form id="mainForm" type="get">
-                <legend></legend>
-                    <div class="span12">
-                        {% block graphics %}
-                        {% endblock %}
-                    </div>
-                    <div class="span12">
-                        {% block grid %}
-                        <div class="span12 ">
-                            <table id="grid" class="grid"></table>
-                            <div id="pager" class="pager"></div>
-                        </div>
-                        {% endblock %}
-                    </div>
+            <div class="span12">
+                {% block graphics %}
+                {% endblock %}
+            </div>
+            <div class="span12">
+                {% block grid %}
+                <div class="jqGrid_container span marginBottom">
+                    <table id="grid" class="grid"></table>
+                    <div id="pager" class="pager"></div>
+                </div>
+                {% endblock %}
+            </div>
         </form>
     </div>
 {% endblock %}
@@ -51,7 +50,7 @@ $(document).ready(function() {
         ],
         colModel:[
             {% for item in formData.colunas %}
-                {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:130, align:"right"},
+                {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:130},
             {% endfor %}
             {name:'acao',index:'acao', width:30, align:"center"}
         ],

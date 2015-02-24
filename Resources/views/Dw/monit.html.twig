@@ -44,7 +44,6 @@
         <table id="grid" class="grid"></table>
         <div id="pager" class="pager"></div>
     </div>
-
 {% endblock %}
 
 {% block box_javascripts %}
@@ -188,8 +187,8 @@ $(document).ready(function() {
 
         ],
         colModel:[
-           {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:100},
-           {name:'qtde',index:'qtde', width:30, align:"center"},
+           {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:200},
+           {name:'qtde',index:'qtde', width:75, align:"center"},
            {% for item in formData.colunas %}
            {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:150, align:"right"},
            {% endfor %}

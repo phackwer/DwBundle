@@ -156,7 +156,7 @@ class DwController extends BaseController
             $v = implode('/', array_reverse(explode('-', $v)));
         }
         //money
-        if (strpos(strrev($v), '.') == 2 || is_float($v) || strstr($k, 'vlr_')) {
+        if (strpos(strrev($v), '.') == 2 || is_float($v) || strstr($k, 'vlr_') || strstr($k, 'valor_')) {
             $negat = ((float) $v < 0) ? true : false;
             $v = number_format((float) $v, 2, ',', '.');
             $v = $negat ? '<span style="color: #FF0000">(' . str_replace('-', '', $v) . ')</span>' : '<span style="color: #006600">' . $v . '</span>';
@@ -177,6 +177,8 @@ class DwController extends BaseController
         if (strstr($k, 'cpf') || strstr($k, 'CPF') || strstr($k, 'Cpf')) {
             $v = $this->mask(str_pad($v, 11, 0, STR_PAD_LEFT), '###.###.###-##');
         }
+
+        // $v = '<div class="jqGridOverflowColumn">'.$v.'</div>';
 
         return $v;
 
