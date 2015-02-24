@@ -281,6 +281,34 @@ class DwService extends BaseService
         return $gridData;
     }
 
+    public function getAllData(Request $req)
+    {
+        $orderby = null;
+        $order = null;
+        if ($req->query->get('sidx')) {
+            $orderby = $req->query->get('sidx');
+            $order = $req->query->get('sord');
+        }
+
+        $page = null;
+        $rows = null;
+        if ($req->query->get('page', 1)) {
+            $rows = $req->query->get('rows');
+            $page = $req->query->get('page');
+        }
+
+        $searchData = $this->getSearchData($req);
+
+        $sql = $this->getFullSearchQuery($searchData, $orderby, $order, $page, $rows);
+
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+
+        $stmt->execute();
+        $gridData = $stmt->fetchAll();
+
+        return $gridData;
+    }
+
     public function getResultCount(Request $req)
     {
         $searchData = $this->getSearchData($req);
@@ -407,6 +435,34 @@ class DwService extends BaseService
         $searchData = $this->getSearchData($req);
 
         $sql = $this->getPagedDrillQuery($searchData, $orderby, $order, $page, $rows);
+
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+
+        $stmt->execute();
+        $gridData = $stmt->fetchAll();
+
+        return $gridData;
+    }
+
+    public function drillFullQuery(Request $req)
+    {
+        $orderby = null;
+        $order = null;
+        if ($req->query->get('sidx')) {
+            $orderby = $req->query->get('sidx');
+            $order = $req->query->get('sord');
+        }
+
+        $page = null;
+        $rows = null;
+        if ($req->query->get('page', 1)) {
+            $rows = $req->query->get('rows');
+            $page = $req->query->get('page');
+        }
+
+        $searchData = $this->getSearchData($req);
+
+        $sql = $this->getFullDrillQuery($searchData, $orderby, $order, $page, $rows);
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
 

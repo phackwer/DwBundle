@@ -33,7 +33,7 @@
         </div>
         <div>
             <a href="{{ path('san_sis_core_dw_entry',  {'routeParam' : routeParam })}}" class="btn btn-danger span6">Limpar</a>
-            <a onclick="exportExcel()" id="submit" class="btn btn-primary span6">Excel</a>
+            <a onclick="exportToExcel()" id="submit" class="btn btn-primary span6">Excel</a>
         </div>
 {% endblock %}
 
@@ -50,6 +50,12 @@
 <script>
 
 {%  if routeParam is defined and routeParam is not null %}
+
+function exportToExcel()
+{
+    href = '{{ path('san_sis_core_dw_entry_export',  {'routeParam' : routeParam })}}?' + $('#mainForm').serialize() + '&metrica=' + $('.metricas.btn-success').attr('metrica');
+    window.location.href = href;
+}
 
 function pegaValoresDoFormulario()
 {

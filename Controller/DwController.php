@@ -70,6 +70,36 @@ class DwController extends BaseController
     }
 
     /**
+     * Exporta dados da grid para o excel
+     * @return [type] [description]
+     */
+    public  function exportGridToExcelAction($routeParam)
+    {
+        $req = $this->getRequest();
+        $req->query->set('routeParam', $routeParam);
+
+        //Obtém lista completa da service
+        $arr = $this->getService()->getAllData($this->getRequest());
+        $this->exportToExcel($arr);
+    }
+
+    public function exportToExcel($arr)
+    {
+        //Cria o excel e adiciona o conteúdo a ele
+        $excel = new \PHPExcel();
+        $sheet = $excel->setActiveSheetIndex(0)->fromArray($arr, NULL, 'A1');
+
+        // Redirect output to a client’s web browser (Excel5)
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="01simple.xls"');
+        header('Cache-Control: max-age=0');
+
+        $objWriter = \PHPExcel_IOFactory::createWriter($excel, 'Excel5');
+        $objWriter->save('php://output');
+        exit; //mudar isso para padrão Symfony, pelamordedeus
+    }
+
+    /**
      * Realiza a pesquisa paginada e retorna para o grid da primeira tela
      * @return \StdClass
      */
@@ -256,6 +286,20 @@ class DwController extends BaseController
         $req->query->set('routeParam', $routeParam);
         $data = $this->getDrillGridData();
         return $this->renderJson($data);
+    }
+
+    /**
+     * Exporta dados da grid para o excel
+     * @return [type] [description]
+     */
+    public  function exportDrillGridToExcelAction($routeParam)
+    {
+        $req = $this->getRequest();
+        $req->query->set('routeParam', $routeParam);
+
+        //Obtém lista completa da service
+        $arr = $this->getService()->drillQuery($this->getRequest());
+        $this->exportToExcel($arr);
     }
 
     /**

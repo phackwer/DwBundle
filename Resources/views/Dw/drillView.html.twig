@@ -17,12 +17,23 @@
             </div>
         </form>
     </div>
+
+            <div>
+            <a href="{{ path('san_sis_core_dw_entry',  {'routeParam' : routeParam })}}" class="btn btn-danger span2">Limpar</a>
+            <a onclick="exportToExcel()" id="submit" class="btn btn-primary span2">Excel</a>
+        </div>
 {% endblock %}
 
 {% block box_javascripts %}
 <script>
 
 {%  if routeParam is defined and routeParam is not null %}
+
+function exportToExcel()
+{
+    href = '{{ path('san_sis_core_dw_drill_export',  {'routeParam' : routeParam, 'nivel' : nivel })}}?' + $('#mainForm').serialize() + '&metrica=' + $('.metricas.btn-success').attr('metrica');
+    window.location.href = href;
+}
 
 function fixGrid(grid, pager)
 {

@@ -13,6 +13,11 @@ san_sis_core_dw_entry:
     path:     /{routeParam}
     defaults: { _controller: SanSISCoreDwBundle:Dw:routeParam }
 
+#Exportação Primeiro nível de dw
+san_sis_core_dw_entry_export:
+    path:     /{routeParam}/export
+    defaults: { _controller: SanSISCoreDwBundle:Dw:exportGridToExcel }
+
 # JSON Pesquisa de nível 1
 san_sis_core_dw_search:
     path:     /{routeParam}/search
@@ -22,6 +27,11 @@ san_sis_core_dw_search:
 san_sis_core_dw_drill:
     path:     /{routeParam}/drill/{nivel}
     defaults: { _controller: SanSISCoreDwBundle:Dw:drill }
+
+#Exportação Primeiro nível de dw
+san_sis_core_dw_drill_export:
+    path:     /{routeParam}/drill/{nivel}/export/
+    defaults: { _controller: SanSISCoreDwBundle:Dw:exportDrillGridToExcel }
 
 # JSON pesquisa de nível n
 san_sis_core_dw_drill_search:
