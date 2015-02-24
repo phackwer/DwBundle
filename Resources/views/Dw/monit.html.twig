@@ -3,12 +3,12 @@
 {% block box_title %}Relatórios / DW{% endblock %}
 
 {% block buttons %}
-    <div  id="botoes" class="btn-group clearfix" style="overflow: auto;margin-left: 5px;">
+    <div  id="botoes" class=" clearfix" style="overflow: auto; margin-left: 5px;">
       {%  if formData.botoes is defined %}
         {% for item in formData.botoes %}
             <a dataPath="{{ path('san_sis_core_dw_search', { 'routeParam' : routeParam}) }}"
                   metrica="{{ item.dataview_column }}"
-                  class="metricas btn btn-mini btn-primary">
+                  class="metricas btn btn-mini btn-primary" style="margin-bottom: 5px;">
                 {{ item.screen_name }}
             </a>
         {% endfor %}
@@ -115,7 +115,7 @@ function pegaMetrica ()
             {name: $('.metricas.btn-success').attr('metrica'),index:'' + $('.metricas.btn-success').attr('metrica'), width:100},
             {name:'qtde',index:'qtde', width:30, align:"center"},
             {% for item in formData.colunas %}
-            {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:100, align:"right"},
+            {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:120, align:"right"},
             {% endfor %}
             {name:'acao',index:'acao', width:30, align:"center"}
             ],
@@ -166,7 +166,7 @@ function fixGrid(grid, pager)
 
 function fixViewSizes(e) {
     fixGrid('grid', 'pager');
-    $('#filtros').css('height',parseInt($(window).innerHeight()) - 350);
+    $('#filtros').css('height',parseInt($(window).innerHeight()) - 360);
     $('#botoes').css('width',parseInt($(window).innerWidth()) - 600 );
 }
 
@@ -191,7 +191,7 @@ $(document).ready(function() {
            {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:100},
            {name:'qtde',index:'qtde', width:30, align:"center"},
            {% for item in formData.colunas %}
-           {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:100, align:"right"},
+           {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:150, align:"right"},
            {% endfor %}
            {name:'acao',index:'acao', width:30, align:"center"}
         ],
@@ -201,7 +201,7 @@ $(document).ready(function() {
          width: 960,
          height: 500,
          autowidth: false,
-         shrinkToFit: true,
+         shrinkToFit: false,
          pager: '#pager',
          viewrecords: true,
          sortname: '' + $(".metricas").first().attr('metrica'),

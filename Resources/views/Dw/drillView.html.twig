@@ -1,10 +1,9 @@
 {% extends "SanSISCoreDwBundle:Dw:index.html.twig" %}
-
+{% block box_title %}Relatórios / DW{% endblock %}
 {% block box_content %}
     <div class="span12">
         <form id="mainForm" type="get">
-            <fieldset>
-                <legend>{% block page_title %}Monitoramento{% endblock %}</legend>
+                <legend></legend>
                     <div class="span12">
                         {% block graphics %}
                         {% endblock %}
@@ -17,7 +16,6 @@
                         </div>
                         {% endblock %}
                     </div>
-            </fieldset>
         </form>
     </div>
 {% endblock %}
@@ -29,7 +27,7 @@
 
 function fixGrid(grid, pager)
 {
-    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 310 )
+    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 480 )
     $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 295);
 }
 

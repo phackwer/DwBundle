@@ -507,12 +507,12 @@ class DwService extends BaseService
         //MATERA! Fazer as queries para pegar as views do monitoramento com o parametro passado do identificador/chave
         $monitData = $this->getMonitData($req);
         $codMonit = $monitData[0]['id']; //com este vc pega a lista das views
-        $codChave = $monitData[0]['cod_chave']; //com este vc pega o nome da colune e a linha de cada view
+        $codChave = $monitData[0]['id_column']; //com este vc pega o nome da colune e a linha de cada view
         $codChaveValor = $req->query->get($codChave); //este é o valor que deve estar na coluna
 
-        echo $codMonit . '<br>';
-        echo $codChave . '<br>';
-        echo $codChaveValor . '<br>';
+        // echo $codMonit . '<br>';
+        // echo $codChave . '<br>';
+        // echo $codChaveValor . '<br>';
 
         //você vai ter um array de views, faz um loop for com o resultado que veio com codMonit
         // dentro do loop vc usará o codChave

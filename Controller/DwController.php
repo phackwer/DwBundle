@@ -170,11 +170,11 @@ class DwController extends BaseController
         }
 
         //cnpj
-        if (strstr($k, 'cod_cnpj')) {
+        if (strstr($k, 'cnpj') || strstr($k, 'CNPJ') || strstr($k, 'Cnpj')) {
             $v = $this->mask(str_pad($v, 14, 0, STR_PAD_LEFT), '##.###.###/####-##');
         }
         //cpf
-        if (strstr($k, 'cod_cpf')) {
+        if (strstr($k, 'cpf') || strstr($k, 'CPF') || strstr($k, 'Cpf')) {
             $v = $this->mask(str_pad($v, 11, 0, STR_PAD_LEFT), '###.###.###-##');
         }
 
@@ -301,13 +301,22 @@ class DwController extends BaseController
 
         for ($a = 0; $a < count($data->rows); $a++) {
             $rowData = $and . 'valor=' . $data->rows[$a][$searchData['metrica']];
-            $rowIdent = $monitData[0]['cod_chave'];
+            $rowIdent = $monitData[0]['id_column'];
+            if (!$rowIdent) {
+                $rowIdent = 'id';
+            }
             $codchave = $and . $rowIdent . '=' . $data->rows[$a][$rowIdent];
-            $href = $this->generateUrl('san_sis_core_dw_view', array(
-                'routeParam' => $routeParam,
-                'nivel' => $nivel,
-            ));
-            $data->rows[$a]['acao'] = '<a href="' . $href . $params . $rowData . $codchave . '" class="icon-eye-open" title="Visualizar"></a>';
+            if ($monitData[0]['view_route']) {
+                $href = $this->generateUrl($monitData[0]['view_route']);
+                $data->rows[$a]['acao'] = '<a href="' . $href . '?' . $codchave . '" class="icon-eye-open" title="Visualizar"></a>';
+            }
+            else {
+                $href = $this->generateUrl('san_sis_core_dw_view', array(
+                    'routeParam' => $routeParam,
+                    'nivel' => $nivel,
+                ));
+                $data->rows[$a]['acao'] = '<a href="' . $href . $params . $rowData . $codchave . '" class="icon-eye-open" title="Visualizar"></a>';
+            }
         }
 
         return $data;
