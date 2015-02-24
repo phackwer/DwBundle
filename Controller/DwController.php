@@ -80,23 +80,7 @@ class DwController extends BaseController
 
         //Obtém lista completa da service
         $arr = $this->getService()->getAllData($this->getRequest());
-        $this->exportToExcel($arr);
-    }
-
-    public function exportToExcel($arr)
-    {
-        //Cria o excel e adiciona o conteúdo a ele
-        $excel = new \PHPExcel();
-        $sheet = $excel->setActiveSheetIndex(0)->fromArray($arr, NULL, 'A1');
-
-        // Redirect output to a client’s web browser (Excel5)
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename="01simple.xls"');
-        header('Cache-Control: max-age=0');
-
-        $objWriter = \PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-        $objWriter->save('php://output');
-        exit; //mudar isso para padrão Symfony, pelamordedeus
+        $this->renderExcel($arr);
     }
 
     /**
@@ -299,7 +283,7 @@ class DwController extends BaseController
 
         //Obtém lista completa da service
         $arr = $this->getService()->drillQuery($this->getRequest());
-        $this->exportToExcel($arr);
+        $this->renderExcel($arr);
     }
 
     /**
