@@ -18,10 +18,10 @@
         </form>
     </div>
 
-            <div>
-            <a href="{{ path('san_sis_core_dw_entry',  {'routeParam' : routeParam })}}" class="btn btn-danger span2">Limpar</a>
-            <a onclick="exportToExcel()" id="submit" class="btn btn-primary span2">Excel</a>
-        </div>
+    <div class="row-fluid pull-left navigation">
+            <a href="{{ path('san_sis_core_dw_entry',  {'routeParam' : routeParam })}}" style="margin: 0px 20px;" class="btn btn-danger pull-left">Limpar</a>
+            <a onclick="exportToExcel()" id="submit" class="btn btn-primary pull-right" style="margin: 0px 20px;">Excel</a>
+    </div>
 {% endblock %}
 
 {% block box_javascripts %}
