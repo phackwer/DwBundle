@@ -17,7 +17,7 @@
 {% endblock %}
 
 {% block filters %}
-        <div id="filtros" style="overflow: auto">
+        <div id="filtros" style="overflow: auto;">
             <form id="monitoramento" action="">
             {%  if formData.filtros is defined %}
                 {% for item in formData.filtros %}
@@ -40,7 +40,7 @@
 {% block graphics %}{% endblock %}
 
 {% block grid %}
-    <div class="jqGrid_container span marginBottom">
+    <div class="jqGrid_container span marginBottom" style="position:relative;">
         <table id="grid" class="grid"></table>
         <div id="pager" class="pager"></div>
     </div>
@@ -165,14 +165,18 @@ function pegaValoresVinculados()
 
 function fixGrid(grid, pager)
 {
-    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 690 )
-    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 430);
+    $('#' + grid).setGridWidth(parseInt($('.box_borda').innerWidth()) - 350 )
+    $('#' + grid).setGridHeight(parseInt($('.box_borda').innerHeight()) - parseInt($('#botoes').innerHeight()) - 150);
 }
 
 function fixViewSizes(e) {
+    $('.box_borda').css('height', parseInt($(window).innerHeight()) - 350)
     fixGrid('grid', 'pager');
-    $('#filtros').css('height',parseInt($(window).innerHeight()) - 360);
-    $('#botoes').css('width',parseInt($(window).innerWidth()) - 600 );
+    $('#filters_container').css('left',110);
+    $('#filtros').css('height',parseInt($('.box_borda').innerHeight()) - 120);
+    $('#botoes').css('width',parseInt($('.box_borda').innerWidth()) - 350 );
+
+    $('.jqGrid_container').css('top', parseInt($('#botoes').innerHeight() /2));
 }
 
 $(window).bind('resize', fixViewSizes);

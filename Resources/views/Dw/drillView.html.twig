@@ -9,7 +9,7 @@
             </div>
             <div class="span12">
                 {% block grid %}
-                <div class="jqGrid_container span marginBottom">
+                <div class="jqGrid_container span ">
                     <table id="grid" class="grid"></table>
                     <div id="pager" class="pager"></div>
                 </div>
@@ -37,8 +37,9 @@ function exportToExcel()
 
 function fixGrid(grid, pager)
 {
-    $('#' + grid).setGridWidth(parseInt($(window).innerWidth()) - 480 )
-    $('#' + grid).setGridHeight(parseInt($(window).innerHeight()) - 295);
+    $('.box_borda').css('height', parseInt($(window).innerHeight()) - 350)
+   $('#' + grid).setGridWidth(parseInt($('.box_borda').innerWidth()) - 200 )
+   $('#' + grid).setGridHeight(parseInt($('.box_borda').innerHeight()) - 180);
 }
 
 function fixGrids(e) {
