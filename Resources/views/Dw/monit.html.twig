@@ -7,9 +7,9 @@
       {%  if formData.botoes is defined %}
         {% for item in formData.botoes %}
             <a dataPath="{{ path('san_sis_core_dw_search', { 'routeParam' : routeParam}) }}"
-                  metrica="{{ item.dataview_column }}"
+                  metrica="{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset) }}"
                   class="metricas btn btn-mini btn-primary" style="margin-bottom: 5px;">
-                {{ item.screen_name }}
+                {{ item.screen_name | convert_encoding('UTF-8' , real_database_charset) }}
             </a>
         {% endfor %}
        {% endif %}
@@ -21,11 +21,11 @@
             <form id="monitoramento" action="">
             {%  if formData.filtros is defined %}
                 {% for item in formData.filtros %}
-                    <label>{{ item.screen_name }}</label>
-                    <select class="span filtro" name="{{ item.dataview_column }}" id="{{ item.dataview_column }}" {% if item.is_multiple %}multiple{% endif%}>
+                    <label>{{ item.screen_name | convert_encoding('UTF-8' , real_database_charset) }}</label>
+                    <select class="span filtro" name="{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset)  }}" id="{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset)  }}" {% if item.is_multiple %}multiple{% endif%}>
                     <option value="" selected>[-- Selecione Abaixo --]</option>
                     {% for valor in item.valores %}
-                        <option value="{{ valor.valor }}" >{{ valor.valor }}</option>
+                        <option value="{{ valor.valor | convert_encoding('UTF-8' , real_database_charset)  }}" >{{ valor.valor | convert_encoding('UTF-8' , real_database_charset)  }}</option>
                     {% endfor %}
                     </select>
                 {% endfor %}
@@ -120,7 +120,7 @@ function pegaMetrica ()
             {name: $('.metricas.btn-success').attr('metrica'),index:'' + $('.metricas.btn-success').attr('metrica'), width:100},
             {name:'qtde',index:'qtde', width:30, align:"center"},
             {% for item in formData.colunas %}
-            {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:120, align:"right"},
+            {name: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset)  }}',index: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset)  }}', width:120, align:"right"},
             {% endfor %}
             {name:'acao',index:'acao', width:30, align:"center"}
             ],
@@ -191,7 +191,7 @@ $(document).ready(function() {
               'Métrica',
               'Quantidade',
                {% for item in formData.colunas %}
-                  '{{ item.screen_name }}',
+                  '{{ item.screen_name | convert_encoding('UTF-8' , real_database_charset) }}',
               {% endfor %}
               'Ação'
 
@@ -200,7 +200,7 @@ $(document).ready(function() {
            {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:200},
            {name:'qtde',index:'qtde', width:75, align:"center"},
            {% for item in formData.colunas %}
-           {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:150, align:"right"},
+           {name: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset) }}',index: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset) }}', width:150, align:"right"},
            {% endfor %}
            {name:'acao',index:'acao', width:30, align:"center"}
         ],

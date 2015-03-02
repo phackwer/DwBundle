@@ -2,3 +2,5 @@ services:
   sansis.dw.service:
     class: SanSIS\Core\DwBundle\Service\DwService
     arguments: ["@doctrine.orm.entity_manager", "default"]
+    calls:
+        - [setRealDatabaseCharset, ['%real_database_charset%']]

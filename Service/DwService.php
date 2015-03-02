@@ -13,6 +13,13 @@ class DwService extends BaseService
      * @param  \Symfony\Component\HttpFoundation\Request $entityData [CONTÉM DADOS REFERENTES À REQUISIÇÃO FEITA PARA A SERVICE]
      * @return array             array contendo os dados a serem apresentados no formulário
      */
+	
+	protected $realDatabaseCharset = 'UTF8';
+	
+	public function setRealDatabaseCharset($realDatabaseCharset)
+	{
+		$this->realDatabaseCharset = $realDatabaseCharset;
+	}
 
     public function getFormData($entityData = null)
     {
@@ -31,7 +38,7 @@ class DwService extends BaseService
         return $formData;
     }
 
-// FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
+	//FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
     protected function getFiltros($routeParam)
     {
         $sql = 'SELECT
@@ -76,7 +83,7 @@ class DwService extends BaseService
         return $filtros;
     }
 
-// BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
+	// BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
     protected function getBotoes($routeParam)
     {
         $sql = 'SELECT
@@ -208,7 +215,7 @@ class DwService extends BaseService
                 $searchData[$key] = $req->query->get($key);
 
                 if ($key == 'valor' && !isset($searchData[$searchData['metrica']])) {
-                    $searchData[$searchData['metrica']] = $req->query->get($key);
+                    $searchData[$searchData['metrica']] = mb_convert_encoding($req->query->get($key), $this->realDatabaseCharset, mb_detect_encoding($req->query->get($key)));;
                     unset($searchData['valor']);
 
                 }
