@@ -13,13 +13,13 @@ class DwService extends BaseService
      * @param  \Symfony\Component\HttpFoundation\Request $entityData [CONTÉM DADOS REFERENTES À REQUISIÇÃO FEITA PARA A SERVICE]
      * @return array             array contendo os dados a serem apresentados no formulário
      */
-	
-	protected $realDatabaseCharset = 'UTF8';
-	
-	public function setRealDatabaseCharset($realDatabaseCharset)
-	{
-		$this->realDatabaseCharset = $realDatabaseCharset;
-	}
+
+    protected $realDatabaseCharset = 'UTF8';
+
+    public function setRealDatabaseCharset($realDatabaseCharset)
+    {
+        $this->realDatabaseCharset = $realDatabaseCharset;
+    }
 
     public function getFormData($entityData = null)
     {
@@ -38,7 +38,7 @@ class DwService extends BaseService
         return $formData;
     }
 
-	//FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
+    //FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
     protected function getFiltros($routeParam)
     {
         $sql = 'SELECT
@@ -56,7 +56,7 @@ class DwService extends BaseService
           b.filter_sort,
           b.id
         FROM
-          core_dw_filter b
+          core_dw_fact b
           INNER JOIN core_dw_monitor a ON (a.id = b.monitor_id)
         WHERE a.route_param = \'' . $routeParam . '\'
         AND is_filter = true
@@ -83,7 +83,7 @@ class DwService extends BaseService
         return $filtros;
     }
 
-	// BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
+    // BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
     protected function getBotoes($routeParam)
     {
         $sql = 'SELECT
@@ -101,7 +101,7 @@ class DwService extends BaseService
           b.filter_sort,
           b.id
         FROM
-          core_dw_filter b
+          core_dw_fact b
           INNER JOIN core_dw_monitor a ON (a.id = b.monitor_id)
         WHERE a.route_param = \'' . $routeParam . '\'
         AND is_metric = true
@@ -168,7 +168,7 @@ class DwService extends BaseService
         foreach ($keys as $key) {
             if (!in_array($key, array('metrica', 'routeParam', 'selected')) && $value != '' && $key != $descarte) {
 
-                $sql = 'SELECT a.filter_sort, a.dataview_column FROM core_dw_filter a WHERE   a.monitor_id = ' . $monitData[0]['id'] . '  and a.dataview_column = \'' . $key . '\'';
+                $sql = 'SELECT a.filter_sort, a.dataview_column FROM core_dw_fact a WHERE   a.monitor_id = ' . $monitData[0]['id'] . '  and a.dataview_column = \'' . $key . '\'';
                 $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
                 $stmt->execute();
                 $order = $stmt->fetchAll();
@@ -181,14 +181,14 @@ class DwService extends BaseService
                 // echo $sql;
             }
         }
-        return $comboData;
+        return $this->decodeItens($comboData);
     }
 
     // GRID
     protected function getGridColumns($routeParam, $level)
     {
         $sql = 'SELECT *
-                    FROM core_dw_filter a
+                    FROM core_dw_fact a
                      INNER JOIN core_dw_monitor b
                      ON a.monitor_id = b.id
                      WHERE a.level = ' . $level . ' AND
@@ -198,7 +198,7 @@ class DwService extends BaseService
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        return $this->decodeItens($stmt->fetchAll());
     }
 
     /**
@@ -215,7 +215,7 @@ class DwService extends BaseService
                 $searchData[$key] = $req->query->get($key);
 
                 if ($key == 'valor' && !isset($searchData[$searchData['metrica']])) {
-                    $searchData[$searchData['metrica']] = mb_convert_encoding($req->query->get($key), $this->realDatabaseCharset, mb_detect_encoding($req->query->get($key)));;
+                    $searchData[$searchData['metrica']] = $req->query->get($key);
                     unset($searchData['valor']);
 
                 }
@@ -229,7 +229,37 @@ class DwService extends BaseService
         unset($searchData['nd']);
         unset($searchData['_search']);
 
-        return $searchData;
+        return $this->encodeItens($searchData);
+    }
+
+    public function encodeItens($array)
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = $this->encodeItens($value);
+            } else {
+                $array[$key] = mb_convert_encoding($value, $this->realDatabaseCharset, 'UTF-8');
+            }
+        }
+
+        // var_dump($array);
+
+        // die;
+
+        return $array;
+    }
+
+    public function decodeItens($array)
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $array[$key] = $this->decodeItens($value);
+            } else {
+                $array[$key] = mb_convert_encoding($value, 'UTF-8', $this->realDatabaseCharset);
+            }
+        }
+
+        return $array;
     }
 
     /********************************************************************************
@@ -249,7 +279,7 @@ class DwService extends BaseService
                   a.dataview_name,
                   b.dataview_column,
                   b.screen_name
-                  FROM core_dw_filter b
+                  FROM core_dw_fact b
                  INNER JOIN core_dw_monitor a
                  ON b.monitor_id = a.id
                  WHERE  a.route_param = \'' . $routeParam . '\'
@@ -257,7 +287,7 @@ class DwService extends BaseService
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        return $this->decodeItens($stmt->fetchAll());
     }
 
     public function getGridData(Request $req)
@@ -285,7 +315,7 @@ class DwService extends BaseService
         $stmt->execute();
         $gridData = $stmt->fetchAll();
 
-        return $gridData;
+        return $this->decodeItens($gridData);
     }
 
     public function getAllData(Request $req)
@@ -313,7 +343,7 @@ class DwService extends BaseService
         $stmt->execute();
         $gridData = $stmt->fetchAll();
 
-        return $gridData;
+        return $this->decodeItens($gridData);
     }
 
     public function getResultCount(Request $req)
@@ -344,11 +374,11 @@ class DwService extends BaseService
         //Pega os fatos
         $sql = 'SELECT *
                     FROM
-                    core_dw_filter b
+                    core_dw_fact b
                      WHERE
                       b.is_fact = true
                       AND
-                      b.monitor_id =  ' . $monitData[0]['id'].'
+                      b.monitor_id =  ' . $monitData[0]['id'] . '
                       ORDER BY screen_order';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
@@ -361,10 +391,12 @@ class DwService extends BaseService
                       ' . $searchData['metrica'];
 
         foreach ($fatoData as $key => $row) {
-            if ($row['dataview_column_type'] == 'integer' || $row['dataview_column_type'] == 'float' || $row['dataview_column_type'] == 'money')
+            if ($row['dataview_column_type'] == 'integer' || $row['dataview_column_type'] == 'float' || $row['dataview_column_type'] == 'money') {
                 $sql .= ',sum(' . $row['dataview_column'] . ') ' . $row['dataview_column'];
-            else
-                $sql .= ','.$row['dataview_column'];
+            } else {
+                $sql .= ',' . $row['dataview_column'];
+            }
+
         }
 
         $sql .= ' FROM
@@ -448,7 +480,7 @@ class DwService extends BaseService
         $stmt->execute();
         $gridData = $stmt->fetchAll();
 
-        return $gridData;
+        return $this->decodeItens($gridData);
     }
 
     public function drillFullQuery(Request $req)
@@ -476,7 +508,7 @@ class DwService extends BaseService
         $stmt->execute();
         $gridData = $stmt->fetchAll();
 
-        return $gridData;
+        return $this->decodeItens($gridData);
     }
 
     public function getResultDrillCount(Request $req)
@@ -507,11 +539,11 @@ class DwService extends BaseService
         //Pega os fatos
         $sql = 'SELECT *
                     FROM
-                    core_dw_filter b
+                    core_dw_fact b
                      WHERE
                       b.is_fact = true
                       AND
-                      b.monitor_id =  ' . $monitData[0]['id'].'
+                      b.monitor_id =  ' . $monitData[0]['id'] . '
                       ORDER BY screen_order';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);

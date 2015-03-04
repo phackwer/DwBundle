@@ -73,7 +73,7 @@ class DwController extends BaseController
      * Exporta dados da grid para o excel
      * @return [type] [description]
      */
-    public  function exportGridToExcelAction($routeParam)
+    public function exportGridToExcelAction($routeParam)
     {
         $req = $this->getRequest();
         $req->query->set('routeParam', $routeParam);
@@ -200,15 +200,23 @@ class DwController extends BaseController
 
     /**
      * Cria o link para os níveis de Drill
+     *
+     * Se houver view link para o nível, apresenta o(s) link(s) para o nível atual.
+     *
+     * Se não houver mais sublevels, não apresenta o link para drill.
+     *
      * @param array &$data Os dados do resultado da pesquisa que vão ganhar a ação de view do drill
      */
     public function setDrillLink($data)
     {
-
         $req = $this->getRequest();
         $routeParam = $req->get('routeParam');
         $nivel = $req->get('nivel', 1);
-        $nivel++;
+        //Pega os links para o nível atual
+        $otherLinks = '';
+        // $otherLinks = $this->getDataviewColumnsLinks($data, $nivel);
+
+        $proxnivel = $nivel + 1;
         $searchData = $this->getService()->getSearchData($req);
         $params = '?';
         $and = '';
@@ -216,11 +224,11 @@ class DwController extends BaseController
             if ($value && $key != 'routeParam' && $key != $searchData['metrica']) {
                 if (is_array($value)) {
                     foreach ($value as $val) {
-                        $params .= $and . $key . '=' . $val;
+                        $params .= $and . $key . '=' . mb_convert_encoding($val, 'UTF-8', $this->container->getParameter('real_database_charset'));
                         $and = '&';
                     }
                 } else {
-                    $params .= $and . $key . '=' . $value;
+                    $params .= $and . $key . '=' . mb_convert_encoding($value, 'UTF-8', $this->container->getParameter('real_database_charset'));
                 }
                 $and = '&';
             }
@@ -228,12 +236,12 @@ class DwController extends BaseController
         }
 
         for ($a = 0; $a < count($data->rows); $a++) {
-            $rowData = $and . 'valor=' . $data->rows[$a][$searchData['metrica']];
+            $rowData = $and . 'valor=' . mb_convert_encoding($data->rows[$a][$searchData['metrica']], 'UTF-8', $this->container->getParameter('real_database_charset'));
             $href = $this->generateUrl('san_sis_core_dw_drill', array(
                 'routeParam' => $routeParam,
-                'nivel' => $nivel,
+                'nivel' => $proxnivel,
             ));
-            $data->rows[$a]['acao'] = '<a href="' . $href . $params . $rowData . '" class="icon-eye-open" title="Visualizar"></a>';
+            $data->rows[$a]['acao'] = '<a href="' . $href . $params . $rowData . '" class="icon-eye-open" title="Visualizar"></a>' . $otherLinks;
 
         }
 
@@ -276,7 +284,7 @@ class DwController extends BaseController
      * Exporta dados da grid para o excel
      * @return [type] [description]
      */
-    public  function exportDrillGridToExcelAction($routeParam)
+    public function exportDrillGridToExcelAction($routeParam)
     {
         $req = $this->getRequest();
         $req->query->set('routeParam', $routeParam);
@@ -336,11 +344,10 @@ class DwController extends BaseController
                 $rowIdent = 'id';
             }
             $codchave = $and . $rowIdent . '=' . $data->rows[$a][$rowIdent];
-            if ($monitData[0]['view_route']) {
-                $href = $this->generateUrl($monitData[0]['view_route']);
+            if ($monitData[0]['view_main_link_route']) {
+                $href = $this->generateUrl($monitData[0]['view_main_link_route']);
                 $data->rows[$a]['acao'] = '<a href="' . $href . '?' . $codchave . '" class="icon-eye-open" title="Visualizar"></a>';
-            }
-            else {
+            } else {
                 $href = $this->generateUrl('san_sis_core_dw_view', array(
                     'routeParam' => $routeParam,
                     'nivel' => $nivel,
