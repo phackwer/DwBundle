@@ -8,12 +8,14 @@ use \Symfony\Component\HttpFoundation\Request;
  */
 class DwService extends BaseService
 {
+
     /**
      * [getFormData CARREGA OS DADOS DE FORMULÁRIOS PARA EXIBIÇÃO INICIAL]
-     * @param  \Symfony\Component\HttpFoundation\Request $entityData [CONTÉM DADOS REFERENTES À REQUISIÇÃO FEITA PARA A SERVICE]
-     * @return array             array contendo os dados a serem apresentados no formulário
+     * 
+     * @param \Symfony\Component\HttpFoundation\Request $entityData
+     *            [CONTÉM DADOS REFERENTES À REQUISIÇÃO FEITA PARA A SERVICE]
+     * @return array array contendo os dados a serem apresentados no formulário
      */
-
     protected $realDatabaseCharset = 'UTF8';
 
     public function setRealDatabaseCharset($realDatabaseCharset)
@@ -24,21 +26,21 @@ class DwService extends BaseService
     public function getFormData($entityData = null)
     {
         $formData = array();
-
-        if (!is_null($entityData)) {
+        
+        if (! is_null($entityData)) {
             $routeParam = $entityData->query->get('routeParam');
             $level = $entityData->query->get('level') ? $entityData->query->get('level') : 1;
             $formData['filtros'] = $this->getFiltros($routeParam);
             $formData['botoes'] = $this->getBotoes($routeParam);
             $formData['colunas'] = $this->getGridColumns($routeParam, $level);
         }
-
+        
         $formData['monitoramentos'] = $this->getListMonitoramento();
-
+        
         return $formData;
     }
-
-    //FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
+    
+    // FILTROS: BUSCA OS FILTROS NO BANCO DE DADOS
     protected function getFiltros($routeParam)
     {
         $sql = 'SELECT
@@ -61,28 +63,32 @@ class DwService extends BaseService
         WHERE a.route_param = \'' . $routeParam . '\'
         AND is_filter = true
         ORDER BY b.screen_order';
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
-
+        
         $filtros = $stmt->fetchAll();
-
+        
         foreach ($filtros as $key => $filtro) {
             $sql = 'SELECT DISTINCT
                 ' . $filtro['dataview_column'] . ' as valor
             FROM
               ' . $filtro['schema_name'] . '.' . $filtro['dataview_name'];
-
+            
             $sql .= ' order by ' . $filtro['dataview_column'] . ' ' . ($filtro['filter_sort'] ? ' ASC ' : 'DESC');
-            $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+            $stmt = $this->getEntityManager()
+                ->getConnection()
+                ->prepare($sql);
             $stmt->execute();
-
+            
             $filtros[$key]['valores'] = $stmt->fetchAll();
         }
-
+        
         return $filtros;
     }
-
+    
     // BOTOES: BUSCA OS BOTOES NO BANCO DE DADOS
     protected function getBotoes($routeParam)
     {
@@ -106,12 +112,13 @@ class DwService extends BaseService
         WHERE a.route_param = \'' . $routeParam . '\'
         AND is_metric = true
         ORDER BY b.screen_order';
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
-
+        
         return $stmt->fetchAll();
-
     }
 
     public function getMonitData(Request $req)
@@ -120,7 +127,9 @@ class DwService extends BaseService
                     FROM core_dw_monitor b
                      WHERE  b.route_param = \'' . $req->query->get('routeParam') . '\'
                     ';
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll();
     }
@@ -130,20 +139,24 @@ class DwService extends BaseService
      */
     public function getComboData(Request $req)
     {
-        //primeiro pegamos o schema e nome da tabela
+        // primeiro pegamos o schema e nome da tabela
         $monitData = $this->getMonitData($req);
-
-        //Agora construímos um where para o que foi submetido
+        
+        // Agora construímos um where para o que foi submetido
         $keys = $req->query->keys();
-        //Campo que será ignorado vêementemente descartado
+        // Campo que será ignorado vêementemente descartado
         $descarte = $req->query->get('selected');
-
+        
         $where = ' where ';
         $and = '';
-
+        
         foreach ($keys as $key) {
             $value = $req->query->get($key);
-            if (!in_array($key, array('metrica', 'routeParam', 'selected')) && $value != '') {
+            if (! in_array($key, array(
+                'metrica',
+                'routeParam',
+                'selected'
+            )) && $value != '') {
                 if (is_array($value)) {
                     $or = '';
                     $where .= $and . '  ( ';
@@ -158,32 +171,40 @@ class DwService extends BaseService
                 $and = ' and ';
             }
         }
-
+        
         if ($where == ' where ') {
             $where = '';
         }
-
+        
         $comboData = array();
-
+        
         foreach ($keys as $key) {
-            if (!in_array($key, array('metrica', 'routeParam', 'selected')) && $value != '' && $key != $descarte) {
-
+            if (! in_array($key, array(
+                'metrica',
+                'routeParam',
+                'selected'
+            )) && $value != '' && $key != $descarte) {
+                
                 $sql = 'SELECT a.filter_sort, a.dataview_column FROM core_dw_fact a WHERE   a.monitor_id = ' . $monitData[0]['id'] . '  and a.dataview_column = \'' . $key . '\'';
-                $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+                $stmt = $this->getEntityManager()
+                    ->getConnection()
+                    ->prepare($sql);
                 $stmt->execute();
                 $order = $stmt->fetchAll();
                 $sql = 'select distinct ' . $key . ' from ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'] . $where;
                 $sql .= ' order by ' . $key . ' ' . ($order[0]['filter_sort'] ? 'asc' : 'desc');
-                $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+                $stmt = $this->getEntityManager()
+                    ->getConnection()
+                    ->prepare($sql);
                 $stmt->execute();
                 $comboData[$key] = $stmt->fetchAll();
-
+                
                 // echo $sql;
             }
         }
         return $this->decodeItens($comboData);
     }
-
+    
     // GRID
     protected function getGridColumns($routeParam, $level)
     {
@@ -195,15 +216,18 @@ class DwService extends BaseService
                      a.is_fact = true AND
                      b.route_param = \'' . $routeParam . '\'
                     ';
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
-
+        
         return $this->decodeItens($stmt->fetchAll());
     }
 
     /**
      * filtra os dados submetidos para uso pelas queries
-     * @param  Request $req
+     * 
+     * @param Request $req            
      * @return array
      */
     public function getSearchData(Request $req)
@@ -213,22 +237,21 @@ class DwService extends BaseService
         foreach ($keys as $key) {
             if ($req->query->has($key)) {
                 $searchData[$key] = $req->query->get($key);
-
-                if ($key == 'valor' && !isset($searchData[$searchData['metrica']])) {
+                
+                if ($key == 'valor' && ! isset($searchData[$searchData['metrica']])) {
                     $searchData[$searchData['metrica']] = $req->query->get($key);
                     unset($searchData['valor']);
-
                 }
             }
         }
-
+        
         unset($searchData['rows']);
         unset($searchData['page']);
         unset($searchData['sidx']);
         unset($searchData['sord']);
         unset($searchData['nd']);
         unset($searchData['_search']);
-
+        
         return $this->encodeItens($searchData);
     }
 
@@ -241,11 +264,11 @@ class DwService extends BaseService
                 $array[$key] = mb_convert_encoding($value, $this->realDatabaseCharset, 'UTF-8');
             }
         }
-
+        
         // var_dump($array);
-
+        
         // die;
-
+        
         return $array;
     }
 
@@ -258,19 +281,21 @@ class DwService extends BaseService
                 $array[$key] = mb_convert_encoding($value, 'UTF-8', $this->realDatabaseCharset);
             }
         }
-
+        
         return $array;
     }
 
-    /********************************************************************************
-
-
-    QUERYS level 1
-
-
-     ********************************************************************************/
-
-    //Busca as colunas a serem utilizadas para o Drill
+    /**
+     * ******************************************************************************
+     *
+     *
+     * QUERYS level 1
+     *
+     *
+     * ******************************************************************************
+     */
+    
+    // Busca as colunas a serem utilizadas para o Drill
     public function getDrillColumns($routeParam, $level)
     {
         $level = 1;
@@ -284,9 +309,11 @@ class DwService extends BaseService
                  ON b.monitor_id = a.id
                  WHERE  a.route_param = \'' . $routeParam . '\'
                     ';
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
-
+        
         return $this->decodeItens($stmt->fetchAll());
     }
 
@@ -298,23 +325,25 @@ class DwService extends BaseService
             $orderby = $req->query->get('sidx');
             $order = $req->query->get('sord');
         }
-
+        
         $page = null;
         $rows = null;
         if ($req->query->get('page', 1)) {
             $rows = $req->query->get('rows');
             $page = $req->query->get('page');
         }
-
+        
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getPagedSearchQuery($searchData, $orderby, $order, $page, $rows);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return $this->decodeItens($gridData);
     }
 
@@ -326,52 +355,58 @@ class DwService extends BaseService
             $orderby = $req->query->get('sidx');
             $order = $req->query->get('sord');
         }
-
+        
         $page = null;
         $rows = null;
         if ($req->query->get('page', 1)) {
             $rows = $req->query->get('rows');
             $page = $req->query->get('page');
         }
-
+        
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getFullSearchQuery($searchData, $orderby, $order, $page, $rows);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return $this->decodeItens($gridData);
     }
 
     public function getResultCount(Request $req)
     {
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getFullSearchQuery($searchData);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return count($gridData);
     }
 
     public function getFullSearchQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
-        //Pegar os dados do monitoramento de acordo com a route
+        // Pegar os dados do monitoramento de acordo com a route
         $sql = 'SELECT *
                     FROM core_dw_monitor b
                      WHERE  b.route_param = \'' . $searchData['routeParam'] . '\'
                     ';
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
         $monitData = $stmt->fetchAll();
-
-        //Pega os fatos
+        
+        // Pega os fatos
         $sql = 'SELECT *
                     FROM
                     core_dw_fact b
@@ -380,30 +415,31 @@ class DwService extends BaseService
                       AND
                       b.monitor_id =  ' . $monitData[0]['id'] . '
                       ORDER BY screen_order';
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $fatoData = $stmt->fetchAll();
-
-        //Pega os dados para a grid
+        
+        // Pega os dados para a grid
         $sql = 'SELECT  COUNT(*) as qtde,
                       ' . $searchData['metrica'];
-
+        
         foreach ($fatoData as $key => $row) {
             if ($row['dataview_column_type'] == 'integer' || $row['dataview_column_type'] == 'float' || $row['dataview_column_type'] == 'money') {
                 $sql .= ',sum(' . $row['dataview_column'] . ') ' . $row['dataview_column'];
             } else {
                 $sql .= ',' . $row['dataview_column'];
             }
-
         }
-
+        
         $sql .= ' FROM
                     ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'];
-
+        
         $and = ' where ';
-
+        
         foreach ($searchData as $key => $value) {
             if ($key != 'metrica' && $key != 'routeParam' && $value != '') {
                 if (is_array($value)) {
@@ -421,40 +457,41 @@ class DwService extends BaseService
                 }
             }
         }
-
+        
         $sql .= ' group by
                      ' . $searchData['metrica'];
-
+        
         if ($orderby) {
             $sql .= ' order by ' . ($orderby) . ' ' . $order;
         }
-
+        
         return $sql;
     }
 
     public function getPagedSearchQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
         $sql = $this->getFullSearchQuery($searchData, $orderby, $order, $page, $rows);
-
+        
         if ($rows) {
             $sql .= ' limit ' . ($rows);
-
+            
             if ($page) {
                 $sql .= ' offset ' . ($page * $rows - $rows);
             }
         }
-
+        
         return $sql;
     }
 
-    /********************************************************************************
-
-
-    QUERYS level N
-
-
-     ********************************************************************************/
-
+    /**
+     * ******************************************************************************
+     *
+     *
+     * QUERYS level N
+     *
+     *
+     * ******************************************************************************
+     */
     public function drillQuery(Request $req)
     {
         $orderby = null;
@@ -463,23 +500,25 @@ class DwService extends BaseService
             $orderby = $req->query->get('sidx');
             $order = $req->query->get('sord');
         }
-
+        
         $page = null;
         $rows = null;
         if ($req->query->get('page', 1)) {
             $rows = $req->query->get('rows');
             $page = $req->query->get('page');
         }
-
+        
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getPagedDrillQuery($searchData, $orderby, $order, $page, $rows);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return $this->decodeItens($gridData);
     }
 
@@ -491,52 +530,58 @@ class DwService extends BaseService
             $orderby = $req->query->get('sidx');
             $order = $req->query->get('sord');
         }
-
+        
         $page = null;
         $rows = null;
         if ($req->query->get('page', 1)) {
             $rows = $req->query->get('rows');
             $page = $req->query->get('page');
         }
-
+        
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getFullDrillQuery($searchData, $orderby, $order, $page, $rows);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return $this->decodeItens($gridData);
     }
 
     public function getResultDrillCount(Request $req)
     {
         $searchData = $this->getSearchData($req);
-
+        
         $sql = $this->getFullDrillQuery($searchData);
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $gridData = $stmt->fetchAll();
-
+        
         return count($gridData);
     }
 
     public function getFullDrillQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
-        //Pegar os dados do monitoramento de acordo com a route
+        // Pegar os dados do monitoramento de acordo com a route
         $sql = 'SELECT *
                     FROM core_dw_monitor b
                      WHERE  b.route_param = \'' . $searchData['routeParam'] . '\'
                     ';
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
         $stmt->execute();
         $monitData = $stmt->fetchAll();
-
-        //Pega os fatos
+        
+        // Pega os fatos
         $sql = 'SELECT *
                     FROM
                     core_dw_fact b
@@ -545,18 +590,20 @@ class DwService extends BaseService
                       AND
                       b.monitor_id =  ' . $monitData[0]['id'] . '
                       ORDER BY screen_order';
-
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-
+        
+        $stmt = $this->getEntityManager()
+            ->getConnection()
+            ->prepare($sql);
+        
         $stmt->execute();
         $fatoData = $stmt->fetchAll();
-
-        //Pega os dados para a grid
+        
+        // Pega os dados para a grid
         $sql = 'SELECT  * FROM
                     ' . $monitData[0]['schema_name'] . '.' . $monitData[0]['dataview_name'];
-
+        
         $and = ' where ';
-
+        
         foreach ($searchData as $key => $value) {
             if ($key != 'metrica' && $key != 'routeParam' && $value != '') {
                 if (is_array($value)) {
@@ -574,45 +621,44 @@ class DwService extends BaseService
                 }
             }
         }
-
+        
         if ($orderby) {
             $sql .= ' order by ' . ($orderby) . ' ' . $order;
         }
-
+        
         return $sql;
     }
 
     public function getPagedDrillQuery(&$searchData, $orderby = null, $order = null, $page = null, $rows = null)
     {
         $sql = $this->getFullDrillQuery($searchData, $orderby, $order, $page, $rows);
-
+        
         if ($rows) {
             $sql .= ' limit ' . ($rows);
-
+            
             if ($page) {
                 $sql .= ' offset ' . ($page * $rows - $rows);
             }
         }
-
+        
         return $sql;
     }
 
     public function getViewsData(Request $req)
     {
-        //MATERA! Fazer as queries para pegar as views do monitoramento com o parametro passado do identificador/chave
+        // MATERA! Fazer as queries para pegar as views do monitoramento com o parametro passado do identificador/chave
         $monitData = $this->getMonitData($req);
-        $codMonit = $monitData[0]['id']; //com este vc pega a lista das views
-        $codChave = $monitData[0]['id_column']; //com este vc pega o nome da colune e a linha de cada view
-        $codChaveValor = $req->query->get($codChave); //este é o valor que deve estar na coluna
-
+        $codMonit = $monitData[0]['id']; // com este vc pega a lista das views
+        $codChave = $monitData[0]['id_column']; // com este vc pega o nome da colune e a linha de cada view
+        $codChaveValor = $req->query->get($codChave); // este é o valor que deve estar na coluna
+                                                      
         // echo $codMonit . '<br>';
-        // echo $codChave . '<br>';
-        // echo $codChaveValor . '<br>';
-
-        //você vai ter um array de views, faz um loop for com o resultado que veio com codMonit
-        // dentro do loop vc usará o codChave
-
+                                                      // echo $codChave . '<br>';
+                                                      // echo $codChaveValor . '<br>';
+                                                      
+        // você vai ter um array de views, faz um loop for com o resultado que veio com codMonit
+                                                      // dentro do loop vc usará o codChave
+        
         return array();
     }
-
 }

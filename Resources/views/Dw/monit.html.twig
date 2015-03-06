@@ -191,7 +191,7 @@ $(document).ready(function() {
               'Métrica',
               'Quantidade',
                {% for item in formData.colunas %}
-                  '{{ item.screen_name | convert_encoding('UTF-8' , real_database_charset) }}',
+                  '{{ item.screen_name }}',
               {% endfor %}
               'Ação'
 
@@ -200,7 +200,7 @@ $(document).ready(function() {
            {name:$(".metricas").first().attr('metrica'),index: $(".metricas").first().attr('metrica'), width:200},
            {name:'qtde',index:'qtde', width:75, align:"center"},
            {% for item in formData.colunas %}
-           {name: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset) }}',index: '{{ item.dataview_column | convert_encoding('UTF-8' , real_database_charset) }}', width:150, align:"right"},
+           {name: '{{ item.dataview_column }}',index: '{{ item.dataview_column }}', width:150, align:"right"},
            {% endfor %}
            {name:'acao',index:'acao', width:30, align:"center"}
         ],
